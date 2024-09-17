@@ -43,7 +43,7 @@ Building
 1. Upload to test pypi repo:
 `twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
 1. Check that package installs and works in another project:
-`pip install --index-url https://test.pypi.org/simple/ pyrebase4==[new version]`
+`pip install --index-url https://test.pypi.org/simple/ pyrebase-air=[new version]`
 1. Upload to main pypi repo:
 `twine upload dist/*`
 
