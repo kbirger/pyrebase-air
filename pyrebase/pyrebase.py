@@ -2,7 +2,6 @@ import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import HTTPError
-from urllib3.contrib.appengine import is_appengine_sandbox
 
 from urllib.parse import urlencode, quote
 import json
@@ -46,7 +45,7 @@ class Firebase:
                 self.credentials = ServiceAccountCredentials.from_json_keyfile_name(config["serviceAccount"], scopes)
             if service_account_type is dict:
                 self.credentials = ServiceAccountCredentials.from_json_keyfile_dict(config["serviceAccount"], scopes)
-        
+
         adapter = HTTPAdapter()
 
         for scheme in ('http://', 'https://'):
@@ -172,7 +171,7 @@ class Auth:
         request_object = requests.post(request_ref, headers=headers, data=data)
         raise_detailed_error(request_object)
         return request_object.json()
-    
+
     def update_profile(self, id_token, display_name = None, photo_url = None, delete_attribute = None):
         """
         https://firebase.google.com/docs/reference/rest/auth#section-update-profile
@@ -392,8 +391,8 @@ class Database:
         request_object = self.requests.get(request_ref, headers=headers)
         raise_detailed_error(request_object)
         return {
-           'ETag': request_object.headers['ETag'],
-           'value': request_object.json()
+            'ETag': request_object.headers['ETag'],
+            'value': request_object.json()
         }
 
     def conditional_set(self, data, etag, token=None, json_kwargs=None):
@@ -401,14 +400,21 @@ class Database:
         request_ref = self.check_token(self.database_url, self.path, token)
         self.path = ""
         headers = self.build_headers(token)
-        headers['if-match'] = etag
+
+        # FIX: Extract the ETag string if a dictionary is passed
+        if isinstance(etag, dict):
+            etag_string = etag.get('ETag')
+        else:
+            etag_string = etag
+        headers['if-match'] = etag_string
+
         request_object = self.requests.put(request_ref, headers=headers, data=json.dumps(data, **json_kwargs).encode("utf-8"))
 
         # ETag didn't match, so we should return the correct one for the user to try again
         if request_object.status_code == 412:
             return {
-               'ETag': request_object.headers['ETag'],
-               'value': request_object.json()
+                'ETag': request_object.headers['ETag'],
+                'value': request_object.json()
             }
 
         raise_detailed_error(request_object)
@@ -418,14 +424,21 @@ class Database:
         request_ref = self.check_token(self.database_url, self.path, token)
         self.path = ""
         headers = self.build_headers(token)
-        headers['if-match'] = etag
+
+        # FIX: Extract the ETag string if a dictionary is passed
+        if isinstance(etag, dict):
+            etag_string = etag.get('ETag')
+        else:
+            etag_string = etag
+        headers['if-match'] = etag_string
+
         request_object = self.requests.delete(request_ref, headers=headers)
 
         # ETag didn't match, so we should return the correct one for the user to try again
         if request_object.status_code == 412:
             return {
-               'ETag': request_object.headers['ETag'],
-               'value': request_object.json()
+                'ETag': request_object.headers['ETag'],
+                'value': request_object.json()
             }
 
         raise_detailed_error(request_object)
@@ -507,12 +520,12 @@ class Storage:
             if not blob is None:
                 blob.download_to_filename(filename)
         elif token:
-             headers = {"Authorization": "Firebase " + token}
-             r = requests.get(url, stream=True, headers=headers)
-             if r.status_code == 200:
-                 with open(filename, 'wb') as f:
-                    for chunk in r:
-                         f.write(chunk)
+                headers = {"Authorization": "Firebase " + token}
+                r = requests.get(url, stream=True, headers=headers)
+                if r.status_code == 200:
+                    with open(filename, 'wb') as f:
+                        for chunk in r:
+                            f.write(chunk)
         else:
             r = requests.get(url, stream=True)
             if r.status_code == 200:
@@ -562,7 +575,7 @@ class PyreResponse:
         self.query_key = query_key
 
     def __getitem__(self,index):
-       return self.pyres[index]
+        return self.pyres[index]
 
     def val(self):
         if isinstance(self.pyres, list) and self.pyres:
@@ -623,8 +636,8 @@ class ClosableSSEClient(SSEClient):
     def close(self):
         self.should_connect = False
         self.retry = 0
-        self.resp.raw._fp.fp.raw._sock.shutdown(socket.SHUT_RDWR)
-        self.resp.raw._fp.fp.raw._sock.close()
+        if self.resp:
+            self.resp.close()
 
 
 class Stream:
