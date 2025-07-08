@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyrebase_air',
-    version='4.9.1',
+    version='4.10.0',
     url='https://github.com/kbirger/pyrebase-air',
     description='A simple python wrapper for the Firebase API with current deps',
     author='kbirger',
@@ -18,7 +18,7 @@ setup(
     install_requires=[
         'requests-toolbelt>=1.0.0',
         'requests>=2.31',
-        'urllib3>=1.21.1,<2',
+        'urllib3>=2.0',
         'gcloud>=0.18.3',
         'oauth2client>=4.1.2',
         'python-jwt>=2.0.1',

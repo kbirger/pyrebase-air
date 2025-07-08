@@ -2,7 +2,6 @@ import requests
 from requests import Session
 from requests.adapters import HTTPAdapter
 from requests.exceptions import HTTPError
-from urllib3.contrib.appengine import is_appengine_sandbox
 
 from urllib.parse import urlencode, quote
 import json
